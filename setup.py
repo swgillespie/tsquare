@@ -12,6 +12,7 @@ setup(name="tsquare",
       py_modules=['tsquare',
                   'tsquare.core',
                   'tsquare.parsers'],
-      requires=['requests'],
+      long_description=open('README').read(),
+      install_requires=['requests >= 1.2.3'],
       license='MIT',
       )

@@ -1,5 +1,8 @@
 *.py[cod]
 
+# profiling
+pstats.txt
+
 # venv/django stuff
 venv
 staticfiles

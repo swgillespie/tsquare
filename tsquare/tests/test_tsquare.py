@@ -1,7 +1,7 @@
 from os.path import abspath, join, dirname
 import sys
 # ensure that tsquare is in the syspath for testing purposes
-sys.path.append(abspath(join(abspath(dirname(__file__)), "..")))
+sys.path.append(abspath(join(abspath(dirname(__file__)), "..", "..")))
 
 import pickle
 import unittest
