@@ -33,7 +33,7 @@ u'Barcelona Architecture'
 >>> print api.get_announcements(user_sites[0], num=10, age=360)
 [] # unfortunately this class I picked has no announcements ;)
 ```
-Full documentation is on the to-do list.
+Full documentation is on the to-do list. You can see example usage in the unit tests.
 
 
 Future directions
