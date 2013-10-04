@@ -16,7 +16,11 @@ To install, clone this repository and run
 ```
 python setup.py install
 ```
-voila! I will throw this up on pip soon, too.
+voila! Youc an also install this via pip:
+
+```
+pip install tsquare
+```
 
 Example
 ---------------
