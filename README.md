@@ -16,7 +16,7 @@ To install, clone this repository and run
 ```
 python setup.py install
 ```
-voila! Youc an also install this via pip:
+voila! You can also install this via pip:
 
 ```
 pip install tsquare
