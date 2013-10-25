@@ -21,13 +21,6 @@ class TSquareAPITests(unittest.TestCase):
     def setUp(self):
         if TSQUARE_LOGIN == '' or TSQUARE_PASS == '':
             self.skipTest('Username or password not supplied.')
-
-    def tearDown(self):
-        try:
-            os.unlink('pickle_dumpage.db')
-        except:
-            # whatever dude
-            pass
             
     def test_login(self):
         api = TSquareAPI(TSQUARE_LOGIN, TSQUARE_PASS)
@@ -140,15 +133,29 @@ class TSquareAPITests(unittest.TestCase):
 
     def test_site_assignments(self):
         api = TSquareAPI(TSQUARE_LOGIN, TSQUARE_PASS)
-        random_site = random.choice(api.get_sites())
+        random_site = api.get_sites()[7]
         assignments = api.get_assignments(random_site)
         self.assertTrue(len(assignments) > 0)
         for assignment in assignments:
             self.assertTrue(hasattr(assignment, 'href'))
             self.assertTrue(hasattr(assignment, 'status'))
-            self.assertTrue(hasattr(assignment, 'open_date'))
-            self.assertTrue(hasattr(assignment, 'due_date'))
+            self.assertTrue(hasattr(assignment, 'openDate'))
+            self.assertTrue(hasattr(assignment, 'dueDate'))
 
+
+class TSquarePickleAPITests(unittest.TestCase):
+
+    def setUp(self):
+        if TSQUARE_LOGIN == '' or TSQUARE_PASS == '':
+            self.skipTest('Username or password not supplied.')
+
+    def tearDown(self):
+        try:
+            os.unlink('pickle_dumpage.db')
+        except:
+            # whatever dude
+            pass
+    
     def test_login_pickle(self):
         api = TSquareAPI(TSQUARE_LOGIN, TSQUARE_PASS)
         api = self._pickle_save_load(api)
@@ -270,19 +277,15 @@ class TSquareAPITests(unittest.TestCase):
         for assignment in assignments:
             self.assertTrue(hasattr(assignment, 'href'))
             self.assertTrue(hasattr(assignment, 'status'))
-            self.assertTrue(hasattr(assignment, 'open_date'))
-            self.assertTrue(hasattr(assignment, 'due_date'))
+            self.assertTrue(hasattr(assignment, 'openDate'))
+            self.assertTrue(hasattr(assignment, 'dueDate'))
 
     def _pickle_save_load(self, api):
         pickle.dump(api, open('pickle_dumpage.db', 'w'))
         api = pickle.load(open('pickle_dumpage.db', 'r'))
         return api
 
+
+    
 if __name__ == "__main__":
-    import profile
-    import pstats
-    profile.run('unittest.main()', 'profile.stat')
-    stats = pstats.Stats('profile.stat', stream=open('pstats.txt', 'w'))
-    stats.sort_stats('time', 'calls')
-    stats.print_stats()
-    os.unlink('profile.stat')
+    unittest.main()

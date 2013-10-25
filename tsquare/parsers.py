@@ -1,5 +1,13 @@
 from copy import deepcopy
 import HTMLParser
+import re
+
+try:
+    from BeautifulSoup import BeautifulSoup as soup
+    BS_AVAILABLE = True
+except ImportError:
+    print "WARNING - BS4 NOT AVAILABLE"
+    BS_AVAILABLE = False
 
 class HTMLScraperInterface(object):
     def get_iframes(self, html_in):
@@ -13,6 +21,48 @@ class HTMLScraperInterface(object):
 
     def get_grades(self, html_in):
         raise NotImplementedError('Subclasses of HTMLScraperInterface should override this method')
+
+class LXMLParser(HTMLScraperInterface):
+    
+    def get_iframes(self, html_in):
+        doc = soup(html_in)
+        frame_attrs = dict(doc.iframe.attrs)
+        return [{'name' : frame_attrs['name'],
+                 'title': frame_attrs['title'],
+                 'src'  : frame_attrs['src'] }]
+            
+
+    def get_tools(self, html_in):
+        doc = soup(html_in)
+        out_dict_list = []
+        for tab in doc.findAll('a'):
+            class_type = tab.get('class')
+            if class_type and re.match('icon-sakai-*', class_type):
+                    out_dict_list.append({'name': tab.get('class')[11:].strip(),
+                                     'href': tab.get('href'),
+                                     'desc': tab.get('title')})
+        return out_dict_list
+        
+    def get_assignments(self, html_in):
+        doc = soup(html_in)
+        out_list = []
+        table = doc.table
+        for i, table_row in enumerate(table('tr')):
+            if i == 0:
+                # skip the table header row
+                pass
+            else:
+                temp_obj = { 'href' : table_row.a['href'] }
+                for table_col in table_row('td'):
+                    header = table_col.get('headers')
+                    if header is not None:
+                        temp_obj[header] = table_col.text.strip()
+                out_list.append(temp_obj)
+        return out_list
+
+    def get_grades(self, html_in):
+        pass
+
 
 class DefaultParser(HTMLScraperInterface):
     def get_iframes(self, html_in):
@@ -136,11 +186,11 @@ class _AssignmentHTMLParser(HTMLParser.HTMLParser):
             self._state = 'WAITING_FOR_OPEN_DATE'
             self._lstate = 'STARTING_STATE'
         elif self._assert_state('WAITING_FOR_OPEN_DATE', 'NEXT_IS_OPEN_DATE'):
-            self._constructed_obj['open_date'] = stripped_data
+            self._constructed_obj['openDate'] = stripped_data
             self._state = 'WAITING_FOR_DUE_DATE'
             self._lstate = 'STARTING_STATE'
         elif self._assert_state('WAITING_FOR_DUE_DATE', 'NEXT_IS_DUE_DATE'):
-            self._constructed_obj['due_date'] = stripped_data
+            self._constructed_obj['dueDate'] = stripped_data
             self._assignments.append(deepcopy(self._constructed_obj))
             self._constructed_obj = {}
             self._state = self._PARSER_STATE[0]
@@ -154,5 +204,6 @@ class _AssignmentHTMLParser(HTMLParser.HTMLParser):
         self._assignments = []
         self._constructed_obj = {}
         self._state = self._PARSER_STATE[0]
-
-REGISTERED_METHODS = { 'default' : DefaultParser}
+        
+REGISTERED_METHODS = { 'default' : DefaultParser,
+                       'bs4'     : LXMLParser }

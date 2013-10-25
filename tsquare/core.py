@@ -1,6 +1,5 @@
 import requests
 import parsers
-from copy import deepcopy
 
 BASE_URL_GATECH = 'https://login.gatech.edu/cas/'
 SERVICE = 'https://t-square.gatech.edu/sakai-login-tool/container'
@@ -45,7 +44,7 @@ class TSquareAPI(object):
         return _auth
 
     def __init__(self, username, password,
-                 scraper='default'):
+                 scraper='bs4'):
         """
         Initialize a TSquareAPI object.
         Logs in to TSquare with username and password.
@@ -175,7 +174,7 @@ class TSquareAPI(object):
                    the site has defined no assignments.
         """
         tools = self.get_tools(site)
-        assignment_tool_filter = [x for x in tools if x.name == 'assignments']
+        assignment_tool_filter = [x for x in tools if x.name == 'assignment-grades']
         if not assignment_tool_filter:
             return []
         assignment_tool_url = assignment_tool_filter[0].href
@@ -184,7 +183,7 @@ class TSquareAPI(object):
         iframes = self._html_iface.get_iframes(response.text)
         iframe_url = ''
         for frame in iframes:
-            if frame['title'] == 'Assignments':
+            if frame['title'] == 'Assignments ':
                 iframe_url = frame['src']
         if iframe_url == '':
             print "WARNING: NO ASSIGNMENT IFRAMES FOUND"
@@ -203,6 +202,9 @@ class TSquareUser:
         """
         for key in kwargs:
             setattr(self, key, kwargs[key])
+
+        def list_attrs(self):
+            return self.__dict__.keys()
 
 class TSquareSite:
     def __init__(self, **kwargs):
