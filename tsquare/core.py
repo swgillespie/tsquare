@@ -191,6 +191,27 @@ class TSquareAPI(object):
         response.raise_for_status()
         assignment_dict_list = self._html_iface.get_assignments(response.text)
         return [TSquareAssignment(**x) for x in assignment_dict_list]
+
+    @requires_authentication
+    def get_grades(self, site):
+        tools = self.get_tools(site)
+        grade_tool_filter = [x for x in tools if x.name == 'gradebook-tool']
+        if not grade_tool_filter:
+            return []
+        response = self._session.get(grade_tool_filter[0])
+        response.raise_for_status()
+        iframes = self._html_iface.get_iframes(response.text)
+        iframe_url = ''
+        for frame in iframes:
+            if frame['title'] == 'Gradebook ':
+                iframe_url = frame['src']
+        if iframe_url == '':
+            print "WARNING: NO GRADEBOOK IFRAMES FOUND"
+        response = self._session.get(iframe_url)
+        response.raise_for_status()
+        grade_dict_list = self._html_iface.get_grades(response.text)
+        return grade_dict_list
+        
         
 class TSquareUser:
     def __init__(self, **kwargs):
