@@ -61,8 +61,74 @@ class LXMLParser(HTMLScraperInterface):
         return out_list
 
     def get_grades(self, html_in):
-        pass
+        doc = soup(html_in)
+        out_dict = {}
+        tables = doc.findAll('table')
+        # tables[0] is the header that we don't care about
+        # tables[1] is the course grade
+        course_grade_table = tables[1]
+        if tables[1].span:
+            out_dict['course_grade'] = { 'letter_grade': tables[1].span.text,
+                                         'number_grade': tables[1]('span')[1].text }
+        else:
+            out_dict['course_grade'] = { 'error' : 'Not yet available'}
+        out_dict['grades'] = {}
+        # tables[2] is a bunch of javascript and all of the grade data.
+        # first we have to strip away the javascript.
+        row_data = [x for x in tables[2]('td')]
+        _NEXT_FIELD = 'name'
+        _CURRENT_CATEGORY = ''
+        _temp = {}
+        for row in row_data:
+            if row.img:
 
+                # this is the first row of the table
+                continue
+            if row.span:
+                # this is a category
+                _CURRENT_CATEGORY = row.span.text.strip()
+                if not _CURRENT_CATEGORY in out_dict['grades']:
+                    out_dict['grades'][_CURRENT_CATEGORY] = []
+            elif row.get('class') == 'left' and _NEXT_FIELD == 'name':
+                # this is a grade name
+                _temp['name'] = row.text
+                _NEXT_FIELD = 'date'
+            elif _NEXT_FIELD == 'date':
+                _temp['date'] = row.text
+                _NEXT_FIELD = 'grade'
+            elif _NEXT_FIELD == 'grade':
+
+                _temp['grade'] = row.text
+                _NEXT_FIELD = 'comments'
+            elif _NEXT_FIELD == 'comments':
+                _temp['comments'] = row.text
+                _NEXT_FIELD = 'attachment'
+            elif _NEXT_FIELD == 'attachment':
+                # ignore this for now
+                _NEXT_FIELD = 'name'
+                if _CURRENT_CATEGORY == '':
+                    if not 'unnamed' in out_dict['grades']:
+                        out_dict['grades']['unnamed'] = []
+                    out_dict['grades']['unnamed'].append(_temp)
+                    _temp = {}
+                else:
+                    out_dict['grades'][_CURRENT_CATEGORY].append(_temp)
+                    _temp = {}
+        import pprint; pprint.pprint(out_dict)
+        return out_dict
+
+        #     name = row_data[index].text
+        #     date = row_data[index + 1].text
+        #     grade = row_data[index + 2].text
+        #     comments = row_data[index + 3].text
+        #     from_assignments = row_data[index + 4].text
+        #     out_dict['grades'].append({ 'name' : name,
+        #                                 'date' : date,
+        #                                 'grade': grade,
+        #                                 'comments' : comments,
+        #                                 'from_assignments' : from_assignments})
+        # return out_dict
+        
 
 class DefaultParser(HTMLScraperInterface):
     def get_iframes(self, html_in):
