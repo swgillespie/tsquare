@@ -84,6 +84,19 @@ class TSquareAPI(object):
         return TSquareUser(**user_data)
 
     @requires_authentication
+    def get_site_by_id(self, id):
+        """
+        Looks up a site by ID and returns a TSquareSite representing that
+        object, or throws an exception if no such site is found.
+        @param id - The entityID of the site to look up
+        @returns A TSquareSite object
+        """
+        response = self._session.get(BASE_URL_TSQUARE + '/site/{}.json'.format(id))
+        response.raise_for_status()
+        site_data = response.json()
+        return TSquareSite(**site_data)
+        
+    @requires_authentication
     def get_sites(self, filter_func=lambda x: True):
         """
         Returns a list of TSquareSite objects that represent the sites available
@@ -195,7 +208,7 @@ class TSquareAPI(object):
     @requires_authentication
     def get_grades(self, site):
         tools = self.get_tools(site)
-        grade_tool_filter = [x for x in tools if x.name == 'gradebook-tool']
+        grade_tool_filter = [x.href for x in tools if x.name == 'gradebook-tool']
         if not grade_tool_filter:
             return []
         response = self._session.get(grade_tool_filter[0])
@@ -211,8 +224,28 @@ class TSquareAPI(object):
         response.raise_for_status()
         grade_dict_list = self._html_iface.get_grades(response.text)
         return grade_dict_list
-        
-        
+
+    @requires_authentication
+    def get_syllabus(self, site):
+        tools = self.get_tools(site)
+        syllabus_filter = [x.href for x in tools if x.name == 'syllabus']
+        if not syllabus_filter:
+            return ''
+        response = self._session.get(grade_tool_filter[0])
+        response.raise_for_status()
+        iframes = self._html_iface.get_iframes(response.text)
+        iframe_url = ''
+        for frame in iframes:
+            if frame['title'] == 'Syllabus ':
+                iframe_url = frame['src']
+        if iframe_url == '':
+            print "WARHING: NO SYLLABUS IFRAME FOUND"
+        response = self._session.get(iframe_url)
+        response.raise_for_status()
+        syllabus_html = self._html_iface.get_syllabus(response.text)
+        return syllabus_html
+
+
 class TSquareUser:
     def __init__(self, **kwargs):
         """

@@ -114,21 +114,13 @@ class LXMLParser(HTMLScraperInterface):
                 else:
                     out_dict['grades'][_CURRENT_CATEGORY].append(_temp)
                     _temp = {}
-        import pprint; pprint.pprint(out_dict)
         return out_dict
 
-        #     name = row_data[index].text
-        #     date = row_data[index + 1].text
-        #     grade = row_data[index + 2].text
-        #     comments = row_data[index + 3].text
-        #     from_assignments = row_data[index + 4].text
-        #     out_dict['grades'].append({ 'name' : name,
-        #                                 'date' : date,
-        #                                 'grade': grade,
-        #                                 'comments' : comments,
-        #                                 'from_assignments' : from_assignments})
-        # return out_dict
-        
+    def get_syllabus(self, html_in)
+        soup_html = soup(html_in)
+        table = soup_html('table')
+        html = table.__repr__()[1:-1] # SERIOUSLY beautifulsoup????
+        return html
 
 class DefaultParser(HTMLScraperInterface):
     def get_iframes(self, html_in):
