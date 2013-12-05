@@ -116,7 +116,7 @@ class LXMLParser(HTMLScraperInterface):
                     _temp = {}
         return out_dict
 
-    def get_syllabus(self, html_in)
+    def get_syllabus(self, html_in):
         soup_html = soup(html_in)
         table = soup_html('table')
         html = table.__repr__()[1:-1] # SERIOUSLY beautifulsoup????

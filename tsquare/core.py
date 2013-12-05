@@ -187,7 +187,7 @@ class TSquareAPI(object):
                    the site has defined no assignments.
         """
         tools = self.get_tools(site)
-        assignment_tool_filter = [x for x in tools if x.name == 'assignment-grades']
+        assignment_tool_filter = [x.href for x in tools if x.name == 'assignment-grades']
         if not assignment_tool_filter:
             return []
         assignment_tool_url = assignment_tool_filter[0].href
@@ -207,6 +207,11 @@ class TSquareAPI(object):
 
     @requires_authentication
     def get_grades(self, site):
+        """
+        Gets a list of grades associated with a site. The return type is a dictionary
+        whose keys are assignment categories, similar to how the page is laid out
+        in TSquare.
+        """
         tools = self.get_tools(site)
         grade_tool_filter = [x.href for x in tools if x.name == 'gradebook-tool']
         if not grade_tool_filter:
@@ -227,11 +232,17 @@ class TSquareAPI(object):
 
     @requires_authentication
     def get_syllabus(self, site):
+        """
+        Gets the syllabus for a course. The syllabus may or may not
+        contain HTML, depending on the site. TSquare does not enforce
+        whether or not pages are allowed to have HTML, so it is impossible
+        to tell.
+        """
         tools = self.get_tools(site)
         syllabus_filter = [x.href for x in tools if x.name == 'syllabus']
         if not syllabus_filter:
             return ''
-        response = self._session.get(grade_tool_filter[0])
+        response = self._session.get(syllabus_filter[0])
         response.raise_for_status()
         iframes = self._html_iface.get_iframes(response.text)
         iframe_url = ''

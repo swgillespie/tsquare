@@ -4,7 +4,7 @@ except ImportError:
     from distutils.core import setup
 
 setup(name="tsquare",
-      version='0.2.2',
+      version='0.2.5',
       description='Python TSquare API bindings',
       author='Sean Gillespie',
       author_email='sean.william.g@gmail.com',
